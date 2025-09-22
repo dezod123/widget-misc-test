@@ -1,506 +1,237 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ligue de Soccer Joga Bonito</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calendrier de l’équipe</title>
   <style>
-    /* Reset & Global Styles */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root{
+      --bg:#f1f5f9;
+      --card:#ffffff;
+      --border:#e5e7eb;
+      --text:#0f172a;
+      --muted:#64748b;
+      --primary-start:#3b2d57; /* match players widget */
+      --primary-end:#0e4455;
+      --win:#10b981;
+      --loss:#ef4444;
+      --draw:#f59e0b;
     }
 
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden; /* Removes iframe scrollbar */
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    html, body{ width:100%; min-height:100%; background:transparent; color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; }
+
+    .team-schedule{
+      max-width:1200px;
+      margin:18px auto;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:0 6px 24px rgba(0,0,0,.06);
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: transparent;
-      color: #f9fafb;
+    .header{
+      padding:16px;
+      background:linear-gradient(90deg, var(--primary-start), var(--primary-end));
+      color:#fff;
+    }
+    .header-title{ margin:0; font-size:22px; font-weight:800; }
+
+    .content{ padding:16px; }
+
+    /* Match card */
+    .match{
+      border:1px solid var(--border);
+      border-radius:12px;
+      margin-bottom:12px;
+      overflow:hidden;
+      background:#fff;
+      box-shadow:0 2px 10px rgba(0,0,0,.03);
     }
 
-    /* Widget Container */
-    .football-widget {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 20px;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(8px);
-      border-radius: 16px;
+    .match-head{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 12px;
+      background:#f8fafc;
+      border-bottom:1px solid var(--border);
+      color:var(--muted);
+      font-size:14px;
+      gap:12px;
+      flex-wrap:wrap;
     }
+    .hv{ display:flex; gap:16px; align-items:center; }
 
-    /* Header */
-    .widget-header {
-      margin-bottom: 32px;
+    .match-body{ padding:16px; }
+    .row{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; flex-wrap:wrap;
     }
-
-    .widget-title {
-      font-size: 32px;
-      font-weight: bold;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      margin-bottom: 8px;
-      text-align: center;
+    .team{
+      display:flex; align-items:center; gap:10px; min-width:0; flex:1;
     }
-
-    .title-icon {
-      margin-right: 12px;
-      font-size: 32px;
+    .team .name{
+      font-weight:700; color:var(--text);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
-
-    .widget-subtitle {
-      color: #d1d5db;
-      font-size: 14px;
+    .score{
+      display:flex; align-items:center; gap:10px; min-width:110px; justify-content:center;
     }
+    .score .n{ font-size:28px; font-weight:800; }
+    .score .sep{ color:#94a3b8; font-weight:700; }
 
-    /* Navigation */
-    .journee-nav {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
+    .status-wrap{ display:flex; justify-content:center; margin-top:10px; }
+    .badge{
+      font-size:12px; font-weight:800; padding:6px 12px; border-radius:14px;
+      text-transform:uppercase; letter-spacing:.4px;
     }
+    .badge-win   { background: rgba(16,185,129,.15); color: var(--win); }
+    .badge-loss  { background: rgba(239,68,68,.15);  color: var(--loss); }
+    .badge-draw  { background: rgba(245,158,11,.18); color: var(--draw); }
+    .badge-forfeit{ background: rgba(239,68,68,.15); color: var(--loss); }
+    .badge-scheduled{ display:none; } /* hide when scheduled */
 
-    .nav-label {
-      font-weight: 500;
-      color: #f9fafb;
+    .empty{
+      text-align:center; color:var(--muted); padding:36px 8px;
     }
-
-    .journee-buttons {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+    
+    .logo{
+        width:36px; height:36px; border-radius:50%;
+        overflow:hidden; display:flex; align-items:center; justify-content:center;
+        background:#f1f5f9;
     }
+    .logo img{ width:100%; height:100%; object-fit:contain; display:block; }
 
-    .journee-btn {
-      padding: 8px 16px;
-      border-radius: 12px;
-      border: none;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      background: rgba(255, 255, 255, 0.15);
-      color: #f9fafb;
-      transition: background 0.2s ease;
-    }
-
-    .journee-btn:not(.active):hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-
-    .journee-btn.active {
-      background: #2563eb;
-      color: #fff;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-    }
-
-    /* Match Card */
-    .match-card {
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-      margin-bottom: 16px;
-      transition: all 0.3s ease;
-      padding: 0;
-    }
-
-    .match-card:hover {
-      background: rgba(255, 255, 255, 0.12);
-    }
-
-    /* Card Header */
-    .match-header {
-      padding: 12px 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      color: #f9fafb;
-    }
-
-    .match-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 14px;
-      color: #d1d5db;
-    }
-
-    .time-venue {
-      display: flex;
-      gap: 16px;
-    }
-
-    /* Match Body */
-    .match-details {
-      padding: 20px 16px;
-    }
-
-    .teams-container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    /* Teams */
-    .team {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex: 1;
-      min-width: 0;
-    }
-
-    .team-2 {
-      justify-content: flex-end;
-      flex-direction: row-reverse;
-    }
-
-    .team-logo {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255,255,255,0.2);
-    }
-
-    .team-logo img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        display: block;
-    }
-
-    .team-name {
-      font-weight: 600;
-      color: #f9fafb;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .team-2 .team-name {
-      text-align: right;
-    }
-
-    /* Score Section */
-    .score-section {
-      margin: 0 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 80px;
-    }
-
-    .score-display {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .score {
-      font-size: 32px;
-      font-weight: bold;
-      color: #fff;
-    }
-
-    .score.pending {
-      color: #9ca3af;
-      letter-spacing: 2px;
-    }
-
-    .separator {
-      color: #9ca3af;
-      font-size: 24px;
-    }
-
-    /* Status Badge */
-    .status-container {
-      display: flex;
-      justify-content: center;
-      margin-top: 16px;
-    }
-
-    .status-badge {
-      padding: 6px 14px;
-      border-radius: 14px;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      backdrop-filter: blur(6px);
-    }
-
-    .status-finished {
-      background: rgba(16, 185, 129, 0.2);
-      color: #10b981;
-    }
-
-    .status-draw {
-      background: rgba(251, 191, 36, 0.2);
-      color: #fbbf24;
-    }
-
-    .status-forfeit {
-      background: rgba(239, 68, 68, 0.2);
-      color: #ef4444;
-    }
-
-    /* No Matches */
-    .no-matches {
-      text-align: center;
-      padding: 48px 20px;
-      color: #f9fafb;
-    }
-
-    .no-matches-icon {
-      font-size: 64px;
-      margin-bottom: 16px;
-      opacity: 0.5;
-    }
-
-    .no-matches h3 {
-      font-size: 18px;
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
-
-    .no-matches p {
-      color: #d1d5db;
-    }
-
-    /* Responsive Fix */
-    @media (max-width: 768px) {
-      .teams-container {
-        flex-direction: column;
-        gap: 16px;
-      }
-      .score-section {
-        margin: 16px 0;
-      }
-      .team-2 {
-        flex-direction: row-reverse;
-        justify-content: space-between;
-      }
+    @media (max-width: 768px){
+      .score .n{ font-size:24px; }
     }
   </style>
 </head>
 <body>
-  <div class="football-widget">
-    <div class="widget-header">
-      <h1 class="widget-title">
-        <span class="title-icon">👥</span>
-        Club Tomohawk 2025
-      </h1>
-      <p class="widget-subtitle">Calendrier et résultats</p>
+  <section class="team-schedule">
+    <div class="header">
+      <h1 class="header-title">Calendrier de l’équipe</h1>
     </div>
-
-    <div id="widget-content">
-      <div class="loading">
-        <div class="loading-spinner"></div>
-        <h3>Chargement des matchs...</h3>
-        <p>En attente des données depuis Wix</p>
-      </div>
+    <div class="content" id="content">
+      <div class="empty">En attente des données…</div>
     </div>
-  </div>
+  </section>
 
   <script>
-    let currentMatchData = {};
-    let selectedJournee = "1";
-
-    const teamLogos = {
-      "Blue Lock": "🔵",
-      "Royal Academy": "👑",
-      "Kelb United": "🐕",
-      "Leaf": "🍃",
-      "ESL": "⚽",
-      "CHAKS": "⚽",
-      "UST": "⚽"
-    };
-
-    function getMatchStatus(match) {
-      if (!match.equipeGagnante || match.equipeGagnante === "undefined") {
-        return 'SCHEDULED';
-      }
-      if (match.forfait) return 'FORFEIT';
-      if (match.nul) return 'DRAW';
-      return 'FINISHED';
-    }
-
-    function getMatchResult(match) {
-      const status = getMatchStatus(match);
-      if (status === 'SCHEDULED' || match.forfait) {
-        return { team1Score: '-', team2Score: '-' };
-      }
-      return {
-        team1Score: match.egNbButs,
-        team2Score: match.epNbButs
-      };
-    }
-
-    function formatDate(dateInput) {
-      const s = (dateInput || '').trim();
-      const looksISO = /^\d{4}-\d{2}-\d{2}/.test(s);
-      if (looksISO) {
+    function fmtDateFR(s){
+      const iso = /^\d{4}-\d{2}-\d{2}/.test((s||'').trim());
+      if (iso){
         const d = new Date(s);
-        if (!isNaN(d)) {
-          return d.toLocaleDateString('fr-CA', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric'
-          });
+        if (!isNaN(d)){
+          return d.toLocaleDateString('fr-CA',{ weekday:'short', month:'short', day:'numeric' });
         }
       }
       return s || 'Date à venir';
     }
 
-    function createMatchCard(match) {
-      const status = getMatchStatus(match);
-      const result = getMatchResult(match);
-
-      const statusText = {
-        'SCHEDULED': '',
-        'FORFEIT': 'Forfait',
-        'DRAW': 'Match nul',
-        'FINISHED': 'Terminé'
-      }[status] || '';
-
-      return `
-        <div class="match-card">
-          <div class="match-header">
-            <div class="match-info">
-              <div class="date-info">
-                <span>📅</span>
-                <span>${formatDate(match.date)}</span>
-              </div>
-              <div class="time-venue">
-                <div class="time-info">
-                  <span>🕐</span>
-                  <span>${match.heure}</span>
-                </div>
-                <div class="venue-info">
-                  <span>📍</span>
-                  <span>${match.terrain}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="match-details">
-            <div class="teams-container">
-              <div class="team team-1">
-                <div class="team-logo">
-                    ${match.equipe1Logo
-                    ? `<img src="${match.equipe1Logo}" alt="${match.equipe1}" width="36" height="36" loading="lazy">`
-                    : '⚽'}
-                </div>
-                <div class="team-name">${match.equipe1}</div>
-              </div>
-              <div class="score-section">
-                ${status === 'SCHEDULED' ? `
-                    <div class="score-display">
-                        <span class="score pending">- - -</span>
-                    </div>
-                ` : `
-                    <div class="score-display">
-                        <span class="score">${result.team1Score}</span>
-                        <span class="separator">-</span>
-                        <span class="score">${result.team2Score}</span>
-                    </div>
-                `}
-              </div>
-              <div class="team team-2">
-                <div class="team-logo">
-                    ${match.equipe2Logo
-                    ? `<img src="${match.equipe2Logo}" alt="${match.equipe2}" width="36" height="36" loading="lazy">`
-                    : '⚽'}
-                </div>
-                <div class="team-name">${match.equipe2}</div>
-              </div>
-            </div>
-            ${status !== 'SCHEDULED' ? `
-              <div class="status-container">
-                <span class="status-badge status-${status.toLowerCase()}">
-                  ${statusText}
-                </span>
-              </div>
-            ` : ''}
-          </div>
-        </div>
-      `;
-    }
-
-    function renderWidget() {
-      const journees = Object.keys(currentMatchData).sort((a, b) => Number(a) - Number(b));
-      let currentMatches = currentMatchData[selectedJournee] || [];
-      currentMatches = currentMatches.sort((a, b) => {
-          const ordreA = a.ordreDate ?? Number.MAX_SAFE_INTEGER;
-          const ordreB = b.ordreDate ?? Number.MAX_SAFE_INTEGER;
-          return ordreA - ordreB;
-      });
-
-      const content = `
-        <div class="journee-nav">
-          <span class="nav-label">Date :</span>
-          <div class="journee-buttons">
-            ${journees.map(j => {
-              const first = (currentMatchData[j] && currentMatchData[j][0]) || {};
-              const label = first.date ? formatDate(first.date) : `Journée ${j}`;
-              return `
-                <button 
-                  class="journee-btn ${selectedJournee === j ? 'active' : ''}"
-                  onclick="selectJournee('${j}')"
-                >
-                  ${label}
-                </button>`;
-            }).join('')}
-          </div>
-        </div>
-        <div class="matches-container">
-          ${currentMatches.length > 0 ? 
-            currentMatches.map(match => createMatchCard(match)).join('') :
-            `<div class="no-matches">
-              <div class="no-matches-icon">⚽</div>
-              <h3>Aucun match programmé</h3>
-              <p>Revenez plus tard pour voir les prochains matchs.</p>
-            </div>`
-          }
-        </div>
-      `;
-
-      document.getElementById('widget-content').innerHTML = content;
-    }
-
-    function updateMatchData(data) {
-      currentMatchData = data;
-      const journees = Object.keys(data).sort((a, b) => Number(a) - Number(b));
-      if (journees.length > 0) {
-        selectedJournee = journees[0];
+    function badgeClass(status){
+      switch((status||'').toUpperCase()){
+        case 'WIN': return 'badge-win';
+        case 'LOSS': return 'badge-loss';
+        case 'DRAW': return 'badge-draw';
+        case 'FORFEIT': return 'badge-forfeit';
+        default: return 'badge-scheduled';
       }
-      renderWidget();
     }
 
-    function selectJournee(journee) {
-      selectedJournee = journee;
-      renderWidget();
+    function badgeLabel(status, resultat){
+      const s = (status||'').toUpperCase();
+      if (s === 'WIN')     return resultat || 'Victoire';
+      if (s === 'LOSS')    return resultat || 'Défaite';
+      if (s === 'DRAW')    return resultat || 'Match nul';
+      if (s === 'FORFEIT') return 'Forfait';
+      return '';
     }
 
-    window.selectJournee = selectJournee;
-
-    // Listen for Wix postMessage
-    window.addEventListener('message', function(event) {
-      if (event.data && typeof event.data === 'object' && event.data.type === 'SET_MATCH_DATA') {
-        updateMatchData(event.data.payload);
+    function scoreHtml(m){
+      // show numbers only when we have numeric scores & not forfeit / scheduled
+      const s = (m.status||'').toUpperCase();
+      const numeric = Number.isFinite(m.ourScore) && Number.isFinite(m.oppScore);
+      if (!numeric || s === 'FORFEIT' || s === 'SCHEDULED'){
+        return `<div class="score"><span class="n" style="color:#94a3b8">–</span><span class="sep">-</span><span class="n" style="color:#94a3b8">–</span></div>`;
       }
-    }, false);
+      return `<div class="score"><span class="n">${m.ourScore}</span><span class="sep">-</span><span class="n">${m.oppScore}</span></div>`;
+    }
+
+    function render(team, matches){
+      const content = document.getElementById('content');
+      if (!matches || matches.length === 0){
+        content.innerHTML = `<div class="empty">Aucun match</div>`;
+        return;
+      }
+
+      if (team?.title){
+        document.querySelector('.header-title').textContent = `Calendrier — ${team.title}`;
+      }
+
+      content.innerHTML = matches.map(m => {
+        const our = m.ourTeam || { title: team?.title || 'Notre équipe', logo: team?.logo || '' };
+        const opp = m.opponent || { title: m.adversaire || 'Adversaire', logo: '' };
+
+        return `
+            <article class="match">
+            <div class="match-head">
+                <div class="hv"><span>📅</span><span>${fmtDateFR(m.date)}</span></div>
+                <div class="hv">
+                ${m.terrain ? `<span>📍 ${m.terrain}</span>` : ''}
+                ${m.heure ? `<span>🕐 ${m.heure}</span>` : ''}
+                </div>
+            </div>
+            <div class="match-body">
+                <div class="row">
+                <div class="team">
+                    <div class="logo">
+                    ${our.logo ? `<img src="${our.logo}" alt="${our.title}" width="36" height="36" loading="lazy">` : '⚽'}
+                    </div>
+                    <div class="name">${our.title}</div>
+                </div>
+
+                ${scoreHtml(m)}
+
+                <div class="team" style="justify-content:flex-end">
+                    <div class="name" style="text-align:right">${opp.title}</div>
+                    <div class="logo">
+                    ${opp.logo ? `<img src="${opp.logo}" alt="${opp.title}" width="36" height="36" loading="lazy">` : '⚽'}
+                    </div>
+                </div>
+                </div>
+                <div class="status-wrap">
+                <span class="badge ${badgeClass(m.status)}">${badgeLabel(m.status, m.resultat)}</span>
+                </div>
+            </div>
+            </article>
+        `;
+        }).join('');
+    }
+
+    // Listen for Wix
+    window.addEventListener('message', (event) => {
+      const msg = event.data || {};
+      if (msg.type === 'TEAM_SCHEDULE_DATA' && msg.payload){
+        render(msg.payload.team, msg.payload.matches);
+      }
+    });
+
+    // Local test
+    // setTimeout(() => {
+    //   window.postMessage({
+    //     type:'TEAM_SCHEDULE_DATA',
+    //     payload:{
+    //       team:{id:'X', title:'ESL'},
+    //       matches:[
+    //         {date:'2025-08-30', heure:'18h30', terrain:'Terrain 1', adversaire:'UST',  status:'WIN',  resultat:'Victoire 4-3', ourScore:4, oppScore:3, orderKey:1},
+    //         {date:'2025-09-06', heure:'21h30', terrain:'',        adversaire:'Blue Lock', status:'LOSS', resultat:'Défaite 4-5', ourScore:4, oppScore:5, orderKey:2},
+    //         {date:'2025-09-13', heure:'18h30', terrain:'',        adversaire:'Kelb United',status:'WIN',  resultat:'Victoire 11-9', ourScore:11,oppScore:9, orderKey:3},
+    //         {date:'2025-09-20', heure:'19h30', terrain:'',        adversaire:'Northside', status:'SCHEDULED', resultat:'', ourScore:null, oppScore:null, orderKey:4},
+    //       ]
+    //     }
+    //   }, '*');
+    // }, 300);
   </script>
 </body>
 </html>
-
-
