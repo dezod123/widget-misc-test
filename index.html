@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ligue de Football</title>
+  <style>
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #1a434f; /* Fallback if background image not loaded */
+        background-image: url('your-background-image.jpg'); /* Optional if you want direct image */
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        min-height: 100vh;
+        color: #f9fafb;
+    }
+
+    .football-widget {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.1); /* Transparent for blending */
+        backdrop-filter: blur(8px); /* Soft glass effect */
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Header */
+    .widget-title {
+        font-size: 32px;
+        font-weight: bold;
+        color: #ffffff;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        text-align: center;
+    }
+
+    .widget-subtitle {
+        color: #d1d5db;
+    }
+
+    .title-icon {
+        margin-right: 12px;
+        font-size: 32px;
+    }
+
+    /* Navigation Buttons */
+    .journee-nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .nav-label {
+        font-weight: 500;
+        color: #f9fafb;
+    }
+
+    .journee-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .journee-btn {
+        padding: 8px 16px;
+        border-radius: 12px;
+        border: none;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: rgba(255, 255, 255, 0.15);
+        color: #f9fafb;
+    }
+
+    .journee-btn:not(.active):hover {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .journee-btn.active {
+        background: #2563eb;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.4);
+    }
+
+    /* Match Cards */
+    .match-card {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .match-card:hover {
+        transform: translateY(-3px);
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .match-header {
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: #f9fafb;
+    }
+
+    .match-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        color: #d1d5db;
+    }
+
+    .date-info span:first-child,
+    .time-info span:first-child,
+    .venue-info span:first-child {
+        opacity: 0.7;
+    }
+
+    .match-details {
+        padding: 20px 16px;
+    }
+
+    /* Teams */
+    .team {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        color: #f9fafb;
+    }
+
+    .team-2 {
+        justify-content: flex-end;
+        flex-direction: row-reverse;
+    }
+
+    .team-logo {
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .team-name {
+        font-weight: 600;
+        color: #f9fafb;
+    }
+
+    .team-2 .team-name {
+        text-align: right;
+    }
+
+    /* Scores */
+    .score-section {
+        margin: 0 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .score-display {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .score {
+        font-size: 32px;
+        font-weight: bold;
+        color: #fff;
+    }
+
+    .score.pending {
+        color: #9ca3af;
+        letter-spacing: 2px;
+    }
+
+    .separator {
+        color: #9ca3af;
+        font-size: 24px;
+    }
+
+    /* Status Badges */
+    .status-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 16px;
+    }
+
+    .status-badge {
+    padding: 6px 14px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(6px);
+    }
+
+    .status-finished {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    }
+
+    .status-draw {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+    }
+
+    .status-forfeit {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    }
+
+    /* No Matches */
+    .no-matches {
+    text-align: center;
+    padding: 48px 20px;
+    color: #f9fafb;
+    }
+
+    .no-matches-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+    }
+
+    .no-matches h3 {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    }
+
+    .no-matches p {
+    color: #d1d5db;
+    }
+
+    @media (max-width: 768px) {
+      .teams-container {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .score-section {
+        margin: 0;
+        order: -1;
+      }
+
+      .team-2 {
+        flex-direction: row;
+      }
+
+      .team-2 .team-name {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="football-widget">
+    <div class="widget-header">
+      <h1 class="widget-title">
+        <span class="title-icon">👥</span>
+        Ligue de Soccer Joga Bonito
+      </h1>
+      <p class="widget-subtitle">Calendrier et résultats</p>
+    </div>
+
+    <div id="widget-content">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <h3>Chargement des matchs...</h3>
+        <p>En attente des données depuis Wix</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentMatchData = {};
+    let selectedJournee = "1";
+
+    const teamLogos = {
+      "Blue Lock": "🔵",
+      "Royal Academy": "👑",
+      "Kelb United": "🐕",
+      "Leaf": "🍃",
+      "ESL": "⚽",
+      "CHAKS": "⚽",
+      "UST": "⚽"
+    };
+
+    function getMatchStatus(match) {
+      if (!match.equipeGagnante || match.equipeGagnante === "undefined") {
+        return 'SCHEDULED';
+      }
+      if (match.forfait) return 'FORFEIT';
+      if (match.nul) return 'DRAW';
+      return 'FINISHED';
+    }
+
+    function getMatchResult(match) {
+      const status = getMatchStatus(match);
+      if (status === 'SCHEDULED' || match.forfait) {
+        return { team1Score: '-', team2Score: '-' };
+      }
+      return {
+        team1Score: match.egNbButs,
+        team2Score: match.epNbButs
+      };
+    }
+
+    function formatDate(dateInput) {
+      const s = (dateInput || '').trim();
+      const looksISO = /^\d{4}-\d{2}-\d{2}/.test(s);
+      if (looksISO) {
+        const d = new Date(s);
+        if (!isNaN(d)) {
+          return d.toLocaleDateString('fr-CA', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric'
+          });
+        }
+      }
+      return s || 'Date à venir';
+    }
+
+    function createMatchCard(match) {
+      const status = getMatchStatus(match);
+      const result = getMatchResult(match);
+
+      const statusText = {
+        'SCHEDULED': '',
+        'FORFEIT': 'Forfait',
+        'DRAW': 'Match nul',
+        'FINISHED': 'Terminé'
+      }[status] || '';
+
+      return `
+        <div class="match-card">
+          <div class="match-header">
+            <div class="match-info">
+              <div class="date-info">
+                <span>📅</span>
+                <span>${formatDate(match.date)}</span>
+              </div>
+              <div class="time-venue">
+                <div class="time-info">
+                  <span>🕐</span>
+                  <span>${match.heure}</span>
+                </div>
+                <div class="venue-info">
+                  <span>📍</span>
+                  <span>${match.terrain}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="match-details">
+            <div class="teams-container">
+              <div class="team team-1">
+                <div class="team-logo">${match.equipe1.equipe1Logo || '⚽'}</div>
+                <div class="team-name">${match.equipe1}</div>
+              </div>
+              <div class="score-section">
+                ${status === 'SCHEDULED' ? `
+                    <div class="score-display">
+                        <span class="score pending">- - -</span>
+                    </div>
+                ` : `
+                    <div class="score-display">
+                        <span class="score">${result.team1Score}</span>
+                        <span class="separator">-</span>
+                        <span class="score">${result.team2Score}</span>
+                    </div>
+                `}
+              </div>
+              <div class="team team-2">
+                <div class="team-name">${match.equipe2}</div>
+                <div class="team-logo">${match.equipe2.equipe2Logo || '⚽'}</div>
+              </div>
+            </div>
+            ${status !== 'SCHEDULED' ? `
+              <div class="status-container">
+                <span class="status-badge status-${status.toLowerCase()}">
+                  ${statusText}
+                </span>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderWidget() {
+      const journees = Object.keys(currentMatchData).sort((a, b) => Number(a) - Number(b));
+      const currentMatches = currentMatchData[selectedJournee] || [];
+
+      const content = `
+        <div class="journee-nav">
+          <span class="nav-label">Date :</span>
+          <div class="journee-buttons">
+            ${journees.map(j => {
+              const first = (currentMatchData[j] && currentMatchData[j][0]) || {};
+              const label = first.date ? formatDate(first.date) : `Journée ${j}`;
+              return `
+                <button 
+                  class="journee-btn ${selectedJournee === j ? 'active' : ''}"
+                  onclick="selectJournee('${j}')"
+                >
+                  ${label}
+                </button>`;
+            }).join('')}
+          </div>
+        </div>
+        <div class="matches-container">
+          ${currentMatches.length > 0 ? 
+            currentMatches.map(match => createMatchCard(match)).join('') :
+            `<div class="no-matches">
+              <div class="no-matches-icon">⚽</div>
+              <h3>Aucun match programmé</h3>
+              <p>Revenez plus tard pour voir les prochains matchs.</p>
+            </div>`
+          }
+        </div>
+      `;
+
+      document.getElementById('widget-content').innerHTML = content;
+    }
+
+    function updateMatchData(data) {
+      currentMatchData = data;
+      const journees = Object.keys(data).sort((a, b) => Number(a) - Number(b));
+      if (journees.length > 0) {
+        selectedJournee = journees[0];
+      }
+      renderWidget();
+    }
+
+    function selectJournee(journee) {
+      selectedJournee = journee;
+      renderWidget();
+    }
+
+    window.selectJournee = selectJournee;
+
+    // Listen for Wix postMessage
+    window.addEventListener('message', function(event) {
+      if (event.data && typeof event.data === 'object' && event.data.type === 'SET_MATCH_DATA') {
+        updateMatchData(event.data.payload);
+      }
+    }, false);
+  </script>
+</body>
+</html>
