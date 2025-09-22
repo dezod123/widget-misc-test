@@ -3,265 +3,284 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ligue de Football</title>
+  <title>Ligue de Soccer Joga Bonito</title>
   <style>
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: #1a434f; /* Fallback if background image not loaded */
-        background-image: url('your-background-image.jpg'); /* Optional if you want direct image */
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        min-height: 100vh;
-        color: #f9fafb;
+    /* Reset & Global Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* Removes iframe scrollbar */
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: transparent;
+      color: #f9fafb;
+    }
+
+    /* Widget Container */
     .football-widget {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 20px;
-        background: rgba(255, 255, 255, 0.1); /* Transparent for blending */
-        backdrop-filter: blur(8px); /* Soft glass effect */
-        border-radius: 16px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
     }
 
     /* Header */
-    .widget-title {
-        font-size: 32px;
-        font-weight: bold;
-        color: #ffffff;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        text-align: center;
+    .widget-header {
+      margin-bottom: 32px;
     }
 
-    .widget-subtitle {
-        color: #d1d5db;
+    .widget-title {
+      font-size: 32px;
+      font-weight: bold;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      text-align: center;
     }
 
     .title-icon {
-        margin-right: 12px;
-        font-size: 32px;
+      margin-right: 12px;
+      font-size: 32px;
     }
 
-    /* Navigation Buttons */
+    .widget-subtitle {
+      color: #d1d5db;
+      font-size: 14px;
+    }
+
+    /* Navigation */
     .journee-nav {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
     }
 
     .nav-label {
-        font-weight: 500;
-        color: #f9fafb;
+      font-weight: 500;
+      color: #f9fafb;
     }
 
     .journee-buttons {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .journee-btn {
-        padding: 8px 16px;
-        border-radius: 12px;
-        border: none;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s;
-        background: rgba(255, 255, 255, 0.15);
-        color: #f9fafb;
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.15);
+      color: #f9fafb;
+      transition: background 0.2s ease;
     }
 
     .journee-btn:not(.active):hover {
-        background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.3);
     }
 
     .journee-btn.active {
-        background: #2563eb;
-        color: #fff;
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.4);
+      background: #2563eb;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
     }
 
-    /* Match Cards */
+    /* Match Card */
     .match-card {
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        margin-bottom: 16px;
-        transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+      padding: 0;
     }
 
     .match-card:hover {
-        transform: translateY(-3px);
-        background: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.12);
     }
 
+    /* Card Header */
     .match-header {
-        padding: 12px 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        color: #f9fafb;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: #f9fafb;
     }
 
     .match-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 14px;
-        color: #d1d5db;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      color: #d1d5db;
     }
 
-    .date-info span:first-child,
-    .time-info span:first-child,
-    .venue-info span:first-child {
-        opacity: 0.7;
+    .time-venue {
+      display: flex;
+      gap: 16px;
     }
 
+    /* Match Body */
     .match-details {
-        padding: 20px 16px;
+      padding: 20px 16px;
+    }
+
+    .teams-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     /* Teams */
     .team {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex: 1;
-        color: #f9fafb;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
     }
 
     .team-2 {
-        justify-content: flex-end;
-        flex-direction: row-reverse;
+      justify-content: flex-end;
+      flex-direction: row-reverse;
     }
 
     .team-logo {
-        width: 36px;
-        height: 36px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
+      width: 36px;
+      height: 36px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
     }
 
     .team-name {
-        font-weight: 600;
-        color: #f9fafb;
+      font-weight: 600;
+      color: #f9fafb;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .team-2 .team-name {
-        text-align: right;
+      text-align: right;
     }
 
-    /* Scores */
+    /* Score Section */
     .score-section {
-        margin: 0 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+      margin: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 80px;
     }
 
     .score-display {
-        display: flex;
-        align-items: center;
-        gap: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
     .score {
-        font-size: 32px;
-        font-weight: bold;
-        color: #fff;
+      font-size: 32px;
+      font-weight: bold;
+      color: #fff;
     }
 
     .score.pending {
-        color: #9ca3af;
-        letter-spacing: 2px;
+      color: #9ca3af;
+      letter-spacing: 2px;
     }
 
     .separator {
-        color: #9ca3af;
-        font-size: 24px;
+      color: #9ca3af;
+      font-size: 24px;
     }
 
-    /* Status Badges */
+    /* Status Badge */
     .status-container {
-        display: flex;
-        justify-content: center;
-        margin-top: 16px;
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
     }
 
     .status-badge {
-    padding: 6px 14px;
-    border-radius: 14px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    backdrop-filter: blur(6px);
+      padding: 6px 14px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      backdrop-filter: blur(6px);
     }
 
     .status-finished {
-    background: rgba(16, 185, 129, 0.2);
-    color: #10b981;
+      background: rgba(16, 185, 129, 0.2);
+      color: #10b981;
     }
 
     .status-draw {
-    background: rgba(251, 191, 36, 0.2);
-    color: #fbbf24;
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
     }
 
     .status-forfeit {
-    background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
     }
 
     /* No Matches */
     .no-matches {
-    text-align: center;
-    padding: 48px 20px;
-    color: #f9fafb;
+      text-align: center;
+      padding: 48px 20px;
+      color: #f9fafb;
     }
 
     .no-matches-icon {
-    font-size: 64px;
-    margin-bottom: 16px;
-    opacity: 0.5;
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
     }
 
     .no-matches h3 {
-    font-size: 18px;
-    font-weight: 500;
-    margin-bottom: 8px;
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 8px;
     }
 
     .no-matches p {
-    color: #d1d5db;
+      color: #d1d5db;
     }
 
+    /* Responsive Fix */
     @media (max-width: 768px) {
       .teams-container {
         flex-direction: column;
         gap: 16px;
       }
-
       .score-section {
-        margin: 0;
-        order: -1;
+        margin: 16px 0;
       }
-
       .team-2 {
-        flex-direction: row;
-      }
-
-      .team-2 .team-name {
-        text-align: left;
+        flex-direction: row-reverse;
+        justify-content: space-between;
       }
     }
   </style>
@@ -271,7 +290,7 @@
     <div class="widget-header">
       <h1 class="widget-title">
         <span class="title-icon">👥</span>
-        Ligue de Soccer Joga Bonito
+        Club Tomohawk 2025
       </h1>
       <p class="widget-subtitle">Calendrier et résultats</p>
     </div>
@@ -369,7 +388,7 @@
           <div class="match-details">
             <div class="teams-container">
               <div class="team team-1">
-                <div class="team-logo">${match.equipe1.equipe1Logo || '⚽'}</div>
+                <div class="team-logo">${match.equipe1Logo || '⚽'}</div>
                 <div class="team-name">${match.equipe1}</div>
               </div>
               <div class="score-section">
@@ -386,8 +405,8 @@
                 `}
               </div>
               <div class="team team-2">
+                <div class="team-logo">${match.equipe2Logo || '⚽'}</div>
                 <div class="team-name">${match.equipe2}</div>
-                <div class="team-logo">${match.equipe2.equipe2Logo || '⚽'}</div>
               </div>
             </div>
             ${status !== 'SCHEDULED' ? `
@@ -404,7 +423,12 @@
 
     function renderWidget() {
       const journees = Object.keys(currentMatchData).sort((a, b) => Number(a) - Number(b));
-      const currentMatches = currentMatchData[selectedJournee] || [];
+      let currentMatches = currentMatchData[selectedJournee] || [];
+      currentMatches = currentMatches.sort((a, b) => {
+          const ordreA = a.ordreDate ?? Number.MAX_SAFE_INTEGER;
+          const ordreB = b.ordreDate ?? Number.MAX_SAFE_INTEGER;
+          return ordreA - ordreB;
+      });
 
       const content = `
         <div class="journee-nav">
@@ -463,3 +487,5 @@
   </script>
 </body>
 </html>
+
+
