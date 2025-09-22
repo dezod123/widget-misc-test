@@ -388,7 +388,11 @@
           <div class="match-details">
             <div class="teams-container">
               <div class="team team-1">
-                <div class="team-logo">${match.equipe1Logo || '⚽'}</div>
+                <div class="team-logo">
+                    ${match.equipe1Logo
+                    ? `<img src="${match.equipe1Logo}" alt="${match.equipe2}" />` 
+                    : '⚽'}
+                </div>
                 <div class="team-name">${match.equipe1}</div>
               </div>
               <div class="score-section">
@@ -405,7 +409,11 @@
                 `}
               </div>
               <div class="team team-2">
-                <div class="team-logo">${match.equipe2Logo || '⚽'}</div>
+                <div class="team-logo">
+                    ${match.equipe2Logo
+                    ? `<img src="${match.equipe2Logo}" alt="${match.equipe2}" />` 
+                    : '⚽'}
+                </div>
                 <div class="team-name">${match.equipe2}</div>
               </div>
             </div>
