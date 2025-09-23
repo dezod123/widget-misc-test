@@ -1,234 +1,203 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Calendrier de l’équipe</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player Card Widget</title>
   <style>
-    :root{
-      --bg:#f1f5f9;
-      --card:#ffffff;
-      --border:#e5e7eb;
-      --text:#0f172a;
-      --muted:#64748b;
-      --primary-start:#3b2d57; /* match players widget */
-      --primary-end:#0e4455;
-      --win:#10b981;
-      --loss:#ef4444;
-      --draw:#f59e0b;
+    /* Reset */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body {
+      width:100%; height:100%; overflow:hidden; background:transparent;
+      font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial;
     }
 
-    *{ box-sizing:border-box; margin:0; padding:0; }
-    html, body{ width:100%; min-height:100%; background:transparent; color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; }
-
-    .team-schedule{
-      max-width:1200px;
-      margin:18px auto;
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      overflow:hidden;
-      box-shadow:0 6px 24px rgba(0,0,0,.06);
+    /* Container */
+    #app {
+      display:flex; justify-content:center; align-items:center;
+      height:100%; padding:20px;
     }
 
-    .header{
-      padding:16px;
-      background:linear-gradient(90deg, var(--primary-start), var(--primary-end));
-      color:#fff;
-    }
-    .header-title{ margin:0; font-size:22px; font-weight:800; }
-
-    .content{ padding:16px; }
-
-    /* Match card */
-    .match{
-      border:1px solid var(--border);
-      border-radius:12px;
-      margin-bottom:12px;
-      overflow:hidden;
-      background:#fff;
-      box-shadow:0 2px 10px rgba(0,0,0,.03);
+    /* Player Card */
+    .player-card {
+      position:relative; width:250px; height:380px;
+      background:linear-gradient(145deg, #216a7f, #17101e);
+      border-radius:16px; overflow:hidden;
+      box-shadow:0 8px 20px rgba(0,0,0,.4);
+      display:flex; flex-direction:column; color:#fff;
     }
 
-    .match-head{
-      display:flex; justify-content:space-between; align-items:center;
-      padding:10px 12px;
-      background:#f8fafc;
-      border-bottom:1px solid var(--border);
-      color:var(--muted);
-      font-size:14px;
-      gap:12px;
-      flex-wrap:wrap;
+    /* Jersey number (top-left) */
+    .jersey-number {
+      position:absolute; top:10px; left:10px;
+      font-size:18px; font-weight:bold; color:#fff;
+      background:rgba(0,0,0,.4); padding:3px 8px; border-radius:5px; z-index:3;
     }
-    .hv{ display:flex; gap:16px; align-items:center; }
 
-    .match-body{ padding:16px; }
-    .row{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px; flex-wrap:wrap;
+    /* Team name pill (top-right) */
+    .team-name {
+      position:absolute; top:10px; right:10px; z-index:3;
+      display:flex; align-items:center; gap:6px;
+      font-size:16px; font-weight:600;
+      background:rgba(0,0,0,.4); padding:4px 8px; border-radius:6px;
+      line-height:1;
     }
-    .team{
-      display:flex; align-items:center; gap:10px; min-width:0; flex:1;
-    }
-    .team .name{
-      font-weight:700; color:var(--text);
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
-    .score{
-      display:flex; align-items:center; gap:10px; min-width:110px; justify-content:center;
-    }
-    .score .n{ font-size:28px; font-weight:800; }
-    .score .sep{ color:#94a3b8; font-weight:700; }
 
-    .status-wrap{ display:flex; justify-content:center; margin-top:10px; }
-    .badge{
-      font-size:12px; font-weight:800; padding:6px 12px; border-radius:14px;
-      text-transform:uppercase; letter-spacing:.4px;
+    /* Photo area */
+    .player-photo { width:100%; overflow:hidden; position:relative; }
+    .player-photo img {
+      width:100%; height:180%; object-fit:cover; object-position:center top;
+      display:block;
     }
-    .badge-win   { background: rgba(16,185,129,.15); color: var(--win); }
-    .badge-loss  { background: rgba(239,68,68,.15);  color: var(--loss); }
-    .badge-draw  { background: rgba(245,158,11,.18); color: var(--draw); }
-    .badge-forfeit{ background: rgba(239,68,68,.15); color: var(--loss); }
-    .badge-scheduled{ display:none; } /* hide when scheduled */
 
-    .empty{
-      text-align:center; color:var(--muted); padding:36px 8px;
+    /* Player info */
+    .player-info {
+      display:flex; flex-direction:column; align-items:center;
+      padding:6px 10px 4px 10px; text-align:center;
     }
-    
-    .logo{
-        width:36px; height:36px; border-radius:50%;
-        overflow:hidden; display:flex; align-items:center; justify-content:center;
-        background:#f1f5f9;
-    }
-    .logo img{ width:100%; height:100%; object-fit:contain; display:block; }
+    .player-name { font-size:20px; font-weight:bold; margin-bottom:6px; }
 
-    @media (max-width: 768px){
-      .score .n{ font-size:24px; }
+    /* Stats */
+    .stats {
+      display:flex; justify-content:space-around; width:100%;
+      padding:8px 10px; background:rgba(0,0,0,.3);
+      border-top:1px solid rgba(255,255,255,.1);
     }
+    .stat { text-align:center; }
+    .stat-label { font-size:14px; font-weight:500; color:#e2e8f0; }
+    .stat-value { font-size:22px; font-weight:bold; margin-top:2px; }
+
+    /* Fallback silhouette */
+    .placeholder { width:100%; height:100%; opacity:.4; }
+
+    /* -------- Team logo badge (reusable) -------- */
+    .team-logo {
+      width:26px; height:26px; border-radius:6px;
+      overflow:hidden; display:flex; align-items:center; justify-content:center;
+      background:rgba(255,255,255,.12);
+      box-shadow:0 2px 8px rgba(0,0,0,.25);
+    }
+    .team-logo img { width:100%; height:100%; object-fit:contain; display:block; }
+
+    /* Corner placements (absolute) */
+    .logo-corner { position:absolute; z-index:3; }
+    .logo-tr { top:10px; right:10px; }
+    .logo-tl { top:10px; left:10px; transform:translateY(36px); } /* drops below jersey */
+    .logo-br { bottom:10px; right:10px; }
+    .logo-bl { bottom:10px; left:10px; }
+
+    /* Above-name placement */
+    .logo-above-name { margin-bottom:6px; }
+
+    /* When logo is inside the team-name pill, tighten it up */
+    .team-name .team-logo { width:20px; height:20px; border-radius:4px; background:rgba(255,255,255,.18); }
   </style>
 </head>
 <body>
-  <section class="team-schedule">
-    <div class="header">
-      <h1 class="header-title">Calendrier de l’équipe</h1>
-    </div>
-    <div class="content" id="content">
-      <div class="empty">En attente des données…</div>
-    </div>
-  </section>
+  <div id="app"><p>En attente des données du joueur...</p></div>
 
   <script>
-    function fmtDateFR(s){
-      const iso = /^\d{4}-\d{2}-\d{2}/.test((s||'').trim());
-      if (iso){
-        const d = new Date(s);
-        if (!isNaN(d)){
-          return d.toLocaleDateString('fr-CA',{ weekday:'short', month:'short', day:'numeric' });
-        }
-      }
-      return s || 'Date à venir';
-    }
+    const app = document.getElementById('app');
 
-    function badgeClass(status){
-      switch((status||'').toUpperCase()){
-        case 'WIN': return 'badge-win';
-        case 'LOSS': return 'badge-loss';
-        case 'DRAW': return 'badge-draw';
-        case 'FORFEIT': return 'badge-forfeit';
-        default: return 'badge-scheduled';
-      }
-    }
+    /* Choose where the logo goes:
+       'in-badge' | 'corner-tr' | 'corner-tl' | 'corner-br' | 'corner-bl' | 'above-name' */
+    const LOGO_POSITION = 'in-badge';
 
-    function badgeLabel(status, resultat){
-      const s = (status||'').toUpperCase();
-      if (s === 'WIN')     return resultat || 'Victoire';
-      if (s === 'LOSS')    return resultat || 'Défaite';
-      if (s === 'DRAW')    return resultat || 'Match nul';
-      if (s === 'FORFEIT') return 'Forfait';
+    const FALLBACK_IMAGE = "https://cdn-icons-png.flaticon.com/512/64/64572.png";
+
+    // Robustly handle Wix media IDs or plain URLs
+    function normalizeImageUrl(value) {
+      if (!value || typeof value !== 'string') return '';
+      if (/^https?:\/\//i.test(value)) return value;
+      const m = /^wix:image:\/\/v1\/([^\/#]+)/i.exec(value);
+      if (m && m[1]) return `https://static.wixstatic.com/media/${m[1]}`;
       return '';
     }
 
-    function scoreHtml(m){
-      // show numbers only when we have numeric scores & not forfeit / scheduled
-      const s = (m.status||'').toUpperCase();
-      const numeric = Number.isFinite(m.ourScore) && Number.isFinite(m.oppScore);
-      if (!numeric || s === 'FORFEIT' || s === 'SCHEDULED'){
-        return `<div class="score"><span class="n" style="color:#94a3b8">–</span><span class="sep">-</span><span class="n" style="color:#94a3b8">–</span></div>`;
-      }
-      return `<div class="score"><span class="n">${m.ourScore}</span><span class="sep">-</span><span class="n">${m.oppScore}</span></div>`;
-    }
+    // Build the logo element for different placements
+    function buildLogoHtml(logoUrl, alt, position) {
+      if (!logoUrl) return '';
 
-    function render(team, matches){
-      const content = document.getElementById('content');
-      if (!matches || matches.length === 0){
-        content.innerHTML = `<div class="empty">Aucun match</div>`;
-        return;
+      if (position === 'in-badge') {
+        return `<span class="team-logo"><img src="${logoUrl}" alt="${alt}" loading="lazy"></span>`;
+      }
+      if (position === 'above-name') {
+        return `<div class="team-logo logo-above-name"><img src="${logoUrl}" alt="${alt}" loading="lazy"></div>`;
       }
 
-      if (team?.title){
-        document.querySelector('.header-title').textContent = `Calendrier — ${team.title}`;
-      }
-
-      content.innerHTML = matches.map(m => {
-        const our = m.ourTeam || { title: team?.title || 'Notre équipe', logo: team?.logo || '' };
-        const opp = m.opponent || { title: m.adversaire || 'Adversaire', logo: '' };
-
-        return `
-            <article class="match">
-            <div class="match-head">
-                <div class="hv"><span>📅</span><span>${fmtDateFR(m.date)}</span></div>
-                <div class="hv">
-                ${m.terrain ? `<span>📍 ${m.terrain}</span>` : ''}
-                ${m.heure ? `<span>🕐 ${m.heure}</span>` : ''}
-                </div>
-            </div>
-            <div class="match-body">
-                <div class="row">
-                <div class="team">
-                    <div class="logo">
-                    ${our.logo ? `<img src="${our.logo}" alt="${our.title}" width="36" height="36" loading="lazy">` : '⚽'}
-                    </div>
-                    <div class="name">${our.title}</div>
-                </div>
-
-                ${scoreHtml(m)}
-
-                <div class="team" style="justify-content:flex-end">
-                    <div class="name" style="text-align:right">${opp.title}</div>
-                    <div class="logo">
-                    ${opp.logo ? `<img src="${opp.logo}" alt="${opp.title}" width="36" height="36" loading="lazy">` : '⚽'}
-                    </div>
-                </div>
-                </div>
-                <div class="status-wrap">
-                <span class="badge ${badgeClass(m.status)}">${badgeLabel(m.status, m.resultat)}</span>
-                </div>
-            </div>
-            </article>
-        `;
-        }).join('');
+      // corner placements
+      const map = { 'corner-tr': 'logo-tr', 'corner-tl': 'logo-tl', 'corner-br': 'logo-br', 'corner-bl': 'logo-bl' };
+      const cls = map[position] || 'logo-tr';
+      return `<div class="team-logo logo-corner ${cls}"><img src="${logoUrl}" alt="${alt}" loading="lazy"></div>`;
     }
 
     // Listen for Wix
-    window.addEventListener('message', (event) => {
-      const msg = event.data || {};
-      if (msg.type === 'TEAM_SCHEDULE_DATA' && msg.payload){
-        render(msg.payload.team, msg.payload.matches);
-      }
+    window.addEventListener('message', function(event) {
+      if (!event.data || event.data.type !== "PLAYER_DATA") return;
+      renderPlayerCard(event.data.payload);
     });
 
-    // Local test
+    function renderPlayerCard(player) {
+      const photoUrl = normalizeImageUrl(player.photo) || FALLBACK_IMAGE;
+      const teamName  = player.equipe?.title ?? '';
+      const teamLogo  = normalizeImageUrl(player.equipe?.logo);
+
+      // Top-right team name pill (can include logo if LOGO_POSITION === 'in-badge')
+      const teamNameHtml =
+        `<div class="team-name">
+           ${LOGO_POSITION === 'in-badge' && teamLogo ? buildLogoHtml(teamLogo, teamName, 'in-badge') : ''}
+           ${teamName}
+         </div>`;
+
+      // Extra overlay logo if a corner position is chosen
+      const cornerLogoHtml =
+        (LOGO_POSITION.startsWith('corner') && teamLogo)
+          ? buildLogoHtml(teamLogo, teamName, LOGO_POSITION)
+          : '';
+
+      // Logo above name (centered in info block)
+      const logoAboveNameHtml =
+        (LOGO_POSITION === 'above-name' && teamLogo)
+          ? buildLogoHtml(teamLogo, teamName, 'above-name')
+          : '';
+
+      app.innerHTML = `
+        <div class="player-card">
+          <div class="jersey-number">${player.numero ?? ''}</div>
+          ${teamNameHtml}
+          ${cornerLogoHtml}
+
+          <div class="player-photo">
+            <img src="${photoUrl}" alt="Photo joueur" onerror="this.src='${FALLBACK_IMAGE}'">
+          </div>
+
+          <div class="player-info">
+            ${logoAboveNameHtml}
+            <div class="player-name">${player.nom ?? 'Joueur'}</div>
+
+            <div class="stats">
+              <div class="stat">
+                <div class="stat-label">Buts</div>
+                <div class="stat-value">${player.but ?? 0}</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Passes</div>
+                <div class="stat-value">${player.passes ?? 0}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // For local testing, uncomment:
     // setTimeout(() => {
     //   window.postMessage({
-    //     type:'TEAM_SCHEDULE_DATA',
+    //     type:'PLAYER_DATA',
     //     payload:{
-    //       team:{id:'X', title:'ESL'},
-    //       matches:[
-    //         {date:'2025-08-30', heure:'18h30', terrain:'Terrain 1', adversaire:'UST',  status:'WIN',  resultat:'Victoire 4-3', ourScore:4, oppScore:3, orderKey:1},
-    //         {date:'2025-09-06', heure:'21h30', terrain:'',        adversaire:'Blue Lock', status:'LOSS', resultat:'Défaite 4-5', ourScore:4, oppScore:5, orderKey:2},
-    //         {date:'2025-09-13', heure:'18h30', terrain:'',        adversaire:'Kelb United',status:'WIN',  resultat:'Victoire 11-9', ourScore:11,oppScore:9, orderKey:3},
-    //         {date:'2025-09-20', heure:'19h30', terrain:'',        adversaire:'Northside', status:'SCHEDULED', resultat:'', ourScore:null, oppScore:null, orderKey:4},
-    //       ]
+    //       nom:'Ahmed', numero:7, but:10, passes:2,
+    //       photo:'', // put a real image if you want
+    //       equipe:{ title:'CHAKS', logo:'wix:image://v1/11062b_13c29cfc3f924e2ca1a0d2abcd~mv2.png' }
     //     }
     //   }, '*');
     // }, 300);
